@@ -1,0 +1,11 @@
+{
+  "name": "env-editor",
+  "version": "1.0.0",
+  "description": "Веб-инструмент для редактирования .env файлов",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "author": "olegmrponsao34-boop",
+  "license": "MIT"
+}

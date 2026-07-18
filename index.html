@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>env-editor</title>
+<style>
+  :root {
+    --bg: #f5f5f5;
+    --surface: #ffffff;
+    --border: #ddd;
+    --text: #1a1a1a;
+    --text-secondary: #666;
+    --primary: #4f46e5;
+    --primary-hover: #4338ca;
+    --danger: #e53e3e;
+    --danger-hover: #c53030;
+    --success: #38a169;
+    --warning: #d69e2e;
+    --input-bg: #fff;
+    --input-border: #ccc;
+    --shadow: 0 1px 3px rgba(0,0,0,0.1);
+    --radius: 8px;
+    --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  }
+  .dark {
+    --bg: #0f0f0f;
+    --surface: #1a1a2e;
+    --border: #2d2d44;
+    --text: #e0e0e0;
+    --text-secondary: #a0a0b0;
+    --primary: #6366f1;
+    --primary-hover: #818cf8;
+    --danger: #f56565;
+    --danger-hover: #e53e3e;
+    --success: #48bb78;
+    --warning: #ecc94b;
+    --input-bg: #16213e;
+    --input-border: #2d2d44;
+    --shadow: 0 1px 3px rgba(0,0,0,0.4);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    transition: background 0.3s, color 0.3s;
+  }
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: var(--shadow);
+  }
+  .header h1 {
+    font-size: 22px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .header h1 span { color: var(--primary); }
+  .header-actions { display: flex; gap: 12px; align-items: center; }
+  .btn {
+    padding: 9px 18px;
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font);
+  }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
+  .btn-danger { background: var(--danger); color: #fff; }
+  .btn-danger:hover { background: var(--danger-hover); }
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+  }
+  .btn-ghost:hover { background: var(--border); color: var(--text); }
+  .btn-small { padding: 5px 10px; font-size: 12px; }
+  .btn-icon {
+    padding: 6px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    background: transparent;
+    color: var(--text-secondary);
+    transition: all 0.2s;
+    font-size: 16px;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .btn-icon:hover { background: var(--border); color: var(--text); }
+  .theme-toggle {
+    padding: 8px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    background: transparent;
+    color: var(--text);
+    font-size: 18px;
+    line-height: 1;
+    transition: all 0.2s;
+  }
+  .theme-toggle:hover { background: var(--border); }
+  .container { max-width: 1100px; margin: 0 auto; padding: 24px; }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow);
+  }
+  .card-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: var(--text);
+  }
+  textarea {
+    width: 100%;
+    height: 180px;
+    padding: 12px;
+    border: 1px solid var(--input-border);
+    border-radius: 6px;
+    background: var(--input-bg);
+    color: var(--text);
+    font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+    font-size: 13px;
+    resize: vertical;
+    transition: border-color 0.2s;
+  }
+  textarea:focus { outline: none; border-color: var(--primary); }
+  .input-row { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; }
+  .input-row .btn { white-space: nowrap; }
+  .file-label {
+    padding: 9px 18px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font);
+  }
+  .file-label:hover { background: var(--border); color: var(--text); }
+  .file-label input { display: none; }
+  .or-divider {
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 13px;
+    margin: 12px 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .or-divider::before, .or-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .table-wrap {
+    overflow-x: auto;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  th {
+    text-align: left;
+    padding: 10px 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    border-bottom: 2px solid var(--border);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  td {
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(79,70,229,0.04); }
+  .dark tr:hover td { background: rgba(99,102,241,0.06); }
+  .key-cell {
+    font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+    font-size: 13px;
+    color: var(--primary);
+    font-weight: 500;
+    min-width: 180px;
+    word-break: break-all;
+  }
+  .value-cell {
+    font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+    font-size: 13px;
+    word-break: break-all;
+    color: var(--text);
+    min-width: 200px;
+  }
+  .value-cell.hidden { filter: blur(6px); cursor: pointer; }
+  .value-cell.hidden:hover { filter: blur(4px); }
+  .val-input, .key-input {
+    width: 100%;
+    padding: 6px 8px;
+    border: 1px solid var(--input-border);
+    border-radius: 4px;
+    background: var(--input-bg);
+    color: var(--text);
+    font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+    font-size: 13px;
+  }
+  .val-input:focus, .key-input:focus { outline: none; border-color: var(--primary); }
+  .actions-cell { white-space: nowrap; text-align: right; }
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    padding: 14px 20px;
+    border-radius: var(--radius);
+    color: #fff;
+    font-weight: 600;
+    font-size: 14px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    z-index: 1000;
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.3s;
+    pointer-events: none;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.error { background: var(--danger); }
+  .toast.success { background: var(--success); }
+  .toast.info { background: var(--primary); }
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-secondary);
+  }
+  .empty-state svg { width: 48px; height: 48px; opacity: 0.4; margin-bottom: 12px; }
+  .empty-state p { font-size: 15px; }
+  .errors-card { border-left: 3px solid var(--danger); }
+  .error-item {
+    padding: 6px 0;
+    font-size: 13px;
+    color: var(--danger);
+    font-family: monospace;
+  }
+  .error-item::before { content: '⚠ '; }
+  .add-row-bar {
+    display: flex;
+    gap: 8px;
+    padding: 12px 0;
+    border-top: 1px solid var(--border);
+    margin-top: 8px;
+  }
+  .add-row-bar input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid var(--input-border);
+    border-radius: 6px;
+    background: var(--input-bg);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 14px;
+  }
+  .add-row-bar input:focus { outline: none; border-color: var(--primary); }
+  .stats {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-top: -8px;
+    margin-bottom: 12px;
+  }
+  @media (max-width: 600px) {
+    .container { padding: 12px; }
+    .card { padding: 16px; }
+    .header { padding: 12px 16px; flex-wrap: wrap; gap: 8px; }
+    .header h1 { font-size: 18px; }
+    .input-row { flex-direction: column; }
+    .add-row-bar { flex-direction: column; }
+    .val-input, .key-input { min-width: 80px; }
+  }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1><span>env</span>-editor</h1>
+  <div class="header-actions">
+    <button class="btn btn-primary" onclick="downloadEnv()" id="downloadBtn" disabled>📥 Скачать .env</button>
+    <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" aria-label="Переключить тему">🌙</button>
+  </div>
+</div>
+
+<div class="container">
+  <div class="card">
+    <div class="card-title">📂 Загрузить .env</div>
+    <div class="input-row">
+      <label class="file-label">
+        📄 Выбрать файл
+        <input type="file" accept=".env,.txt" id="fileInput" onchange="handleFile(event)">
+      </label>
+      <span style="color:var(--text-secondary);font-size:13px">или вставьте содержимое ниже</span>
+    </div>
+    <div class="or-divider"></div>
+    <textarea id="envTextarea" placeholder="DB_HOST=localhost&#10;DB_PORT=5432&#10;SECRET_KEY=my_secret"></textarea>
+    <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-primary" onclick="parseInput()">🔍 Разобрать</button>
+      <button class="btn btn-ghost" onclick="clearAll()">🗑 Очистить</button>
+    </div>
+  </div>
+
+  <div id="errorsContainer" style="display:none">
+    <div class="card errors-card">
+      <div class="card-title" style="color:var(--danger)">⚠ Ошибки</div>
+      <div id="errorsList"></div>
+    </div>
+  </div>
+
+  <div class="card" id="tableCard" style="display:none">
+    <div class="card-title" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+      <span>📋 Переменные</span>
+      <button class="btn btn-ghost btn-small" onclick="toggleAllValues()">👁 Показать/скрыть все</button>
+    </div>
+    <div class="stats" id="statsLine">0 переменных</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Ключ</th><th>Значение</th><th style="width:100px"></th></tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+    <div class="add-row-bar">
+      <input type="text" id="newKey" placeholder="НОВЫЙ_КЛЮЧ" onkeydown="if(event.key==='Enter')addRow()">
+      <input type="text" id="newValue" placeholder="значение" onkeydown="if(event.key==='Enter')addRow()">
+      <button class="btn btn-primary" onclick="addRow()">+ Добавить</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let pairs = [];
+let allHidden = false;
+let darkMode = localStorage.getItem('envEditorTheme') === 'dark';
+
+if (darkMode) document.documentElement.classList.add('dark');
+document.getElementById('themeBtn').textContent = darkMode ? '☀️' : '🌙';
+
+function toggleTheme() {
+  darkMode = !darkMode;
+  document.documentElement.classList.toggle('dark', darkMode);
+  document.getElementById('themeBtn').textContent = darkMode ? '☀️' : '🌙';
+  localStorage.setItem('envEditorTheme', darkMode ? 'dark' : 'light');
+}
+
+function showToast(msg, type = 'info') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast ' + type;
+  requestAnimationFrame(() => { t.classList.add('show'); });
+  clearTimeout(t._hide);
+  t._hide = setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function handleFile(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    document.getElementById('envTextarea').value = ev.target.result;
+    showToast('Файл загружен: ' + file.name, 'success');
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+
+async function parseInput() {
+  const content = document.getElementById('envTextarea').value;
+  if (!content.trim()) {
+    showToast('Вставьте содержимое .env файла', 'error');
+    return;
+  }
+  try {
+    const res = await fetch('/api/parse', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content })
+    });
+    const data = await res.json();
+    if (data.errors && data.errors.length > 0) {
+      const ec = document.getElementById('errorsContainer');
+      ec.style.display = 'block';
+      document.getElementById('errorsList').innerHTML = data.errors.map(e =>
+        '<div class="error-item">' + e.message + '</div>'
+      ).join('');
+    } else {
+      document.getElementById('errorsContainer').style.display = 'none';
+    }
+    pairs = data.parsed || [];
+    renderTable();
+    if (pairs.length > 0) showToast('Разобрано ' + pairs.length + ' переменных', 'success');
+    else showToast('Нет переменных для отображения', 'info');
+  } catch (err) {
+    showToast('Ошибка запроса: ' + err.message, 'error');
+  }
+}
+
+function renderTable() {
+  const tbody = document.getElementById('tableBody');
+  const card = document.getElementById('tableCard');
+  const dlBtn = document.getElementById('downloadBtn');
+
+  if (pairs.length === 0) {
+    card.style.display = 'none';
+    dlBtn.disabled = true;
+    return;
+  }
+
+  card.style.display = 'block';
+  dlBtn.disabled = false;
+  document.getElementById('statsLine').textContent = pairs.length + ' переменн' + (pairs.length === 1 ? 'ая' : (pairs.length >= 2 && pairs.length <= 4 ? 'ых' : 'ых'));
+
+  tbody.innerHTML = pairs.map((p, i) => {
+    const hiddenClass = allHidden ? 'hidden' : '';
+    return '<tr>' +
+      '<td><input class="key-input" value="' + esc(p.key) + '" onchange="editKey(' + i + ', this.value)" onkeydown="if(event.key===\'Enter\')this.blur()"></td>' +
+      '<td><div style="display:flex;align-items:center;gap:6px">' +
+        '<input class="val-input ' + hiddenClass + '" value="' + esc(p.value) + '" onchange="editVal(' + i + ', this.value)" onkeydown="if(event.key===\'Enter\')this.blur()" id="vinput-' + i + '">' +
+        '<button class="btn-icon" onclick="toggleVal(' + i + ')" title="Показать/скрыть">👁</button>' +
+      '</div></td>' +
+      '<td class="actions-cell"><button class="btn-icon" onclick="deleteRow(' + i + ')" title="Удалить">🗑</button></td>' +
+    '</tr>';
+  }).join('');
+}
+
+function esc(s) {
+  return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function editKey(i, val) {
+  const v = val.trim();
+  if (!v) { showToast('Ключ не может быть пустым', 'error'); renderTable(); return; }
+  if (v.includes(' ')) { showToast('Ключ не должен содержать пробелы', 'error'); renderTable(); return; }
+  if (pairs.some((p, j) => j !== i && p.key === v)) { showToast('Ключ "' + v + '" уже существует', 'error'); renderTable(); return; }
+  pairs[i].key = v;
+  renderTable();
+}
+
+function editVal(i, val) {
+  pairs[i].value = val;
+}
+
+function deleteRow(i) {
+  pairs.splice(i, 1);
+  renderTable();
+  if (pairs.length === 0) showToast('Все переменные удалены', 'info');
+  else showToast('Переменная удалена', 'info');
+}
+
+function addRow() {
+  const key = document.getElementById('newKey').value.trim();
+  const val = document.getElementById('newValue').value;
+  if (!key) { showToast('Введите ключ', 'error'); return; }
+  if (key.includes(' ')) { showToast('Ключ не должен содержать пробелы', 'error'); return; }
+  if (pairs.some(p => p.key === key)) { showToast('Ключ "' + key + '" уже существует', 'error'); return; }
+  pairs.push({ key, value: val });
+  document.getElementById('newKey').value = '';
+  document.getElementById('newValue').value = '';
+  renderTable();
+  showToast('Переменная добавлена', 'success');
+  document.getElementById('tableCard').style.display = 'block';
+  document.getElementById('downloadBtn').disabled = false;
+}
+
+function toggleVal(i) {
+  const inp = document.getElementById('vinput-' + i);
+  inp.classList.toggle('hidden');
+}
+
+function toggleAllValues() {
+  allHidden = !allHidden;
+  renderTable();
+}
+
+function clearAll() {
+  document.getElementById('envTextarea').value = '';
+  document.getElementById('errorsContainer').style.display = 'none';
+  pairs = [];
+  renderTable();
+  showToast('Очищено', 'info');
+}
+
+async function downloadEnv() {
+  if (pairs.length === 0) { showToast('Нет данных для экспорта', 'error'); return; }
+  try {
+    const res = await fetch('/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pairs })
+    });
+    const data = await res.json();
+    const blob = new Blob([data.content], { type: 'text/plain;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = '.env';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(a.href);
+    showToast('Файл .env скачан', 'success');
+  } catch (err) {
+    showToast('Ошибка: ' + err.message, 'error');
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const sample = 'DB_HOST=localhost\nDB_PORT=5432\nDB_NAME=mydb\nDB_USER=admin\nDB_PASS=secret123\nAPP_ENV=development\nAPP_DEBUG=true\nSECRET_KEY=supersecretkey';
+  document.getElementById('envTextarea').value = sample;
+});
+</script>
+</body>
+</html>
