@@ -1,5 +1,13 @@
 # 🌍 env-editor
 
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Node.js-339933?style=flat&logo=nodedotjs&logoColor=white" alt="Node.js">
+  <img src="https://img.shields.io/badge/license-MIT-blue" alt="License">
+  <img src="https://img.shields.io/badge/dependencies-0-success" alt="Zero deps">
+</p>
+
+
 Веб-инструмент для редактирования `.env` файлов с удобным графическим интерфейсом.
 
 ## 🚀 Запуск
@@ -71,3 +79,16 @@ env-editor/
 ## 📄 Лицензия
 
 MIT
+
+## 💛 Support
+
+If you find this project useful, consider supporting:
+
+```
+USDT TRC-20: TYVN7HLcb5nrLVee9k8DBMZofxJur7ZgLB
+USDT TON:    UQD4mGTxZsIWXx1bNXJ1fsyN0XKvogr34TGSxB7D4nPzOozF
+USDT ERC-20: 0xa79f0713ab132eae54002c9c34fbb837272590c0
+```
+
+---
+
