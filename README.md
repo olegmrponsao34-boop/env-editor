@@ -6,8 +6,6 @@
   <img src="https://img.shields.io/badge/license-MIT-blue" alt="License">
   <img src="https://img.shields.io/badge/dependencies-0-success" alt="Zero deps">
 </p>
-
-
 Веб-инструмент для редактирования `.env` файлов с удобным графическим интерфейсом.
 
 ## 🚀 Запуск
